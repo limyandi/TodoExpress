@@ -1,7 +1,6 @@
 import db from '../../db/db'
+import Validator from './validation'
 import {
-    checkDescription,
-    checkTitle,
     convertToInt
 } from '../../utility'
 
@@ -35,20 +34,25 @@ export default class TodoController {
     }
 
     static add(req, res) {
-        checkTitle(res, req.body.title)
-        checkDescription(res, req.body.description)
 
-        const todo = {
-            id: db.length + 1,
-            title: req.body.title,
-            description: req.body.description
-        }
-        db.push(todo)
-        return res.status(201).send({
-            success: true,
-            message: 'succesfully added todo',
-            todo
+        Validator.validate(req.body).then(() => {
+            const todo = {
+                id: db.length + 1,
+                title: req.body.title,
+                description: req.body.description
+            }
+            db.push(todo)
+            return res.status(201).send({
+                success: true,
+                message: 'succesfully added todo',
+                todo
+            })
+        }).catch(validationError => {
+            const errorMessage = validationError.details.map(d => d.message)
+            res.status(400).send(errorMessage)
         })
+
+        
     }
 
     static delete(req, res) {
@@ -92,22 +96,26 @@ export default class TodoController {
             })
         }
 
-        checkTitle(res, req.body.title)
-        checkDescription(res, req.body.description)
-
-        const updatedTodo = {
-            id: todoFound.id,
-            // handle compatibility if user input empty title
-            title: req.body.title || todoFound.title,
-            description: req.body.description || todoFound.description
-        }
-
-        db.splice(foundIndex, 1, updatedTodo)
-        return res.status(200).send({
-            success: true,
-            message: 'succesfully updated todo',
-            todo: updatedTodo
+        Validator.validate(req.body).then(() => {
+            const updatedTodo = {
+                id: todoFound.id,
+                // handle compatibility if user input empty title
+                title: req.body.title || todoFound.title,
+                description: req.body.description || todoFound.description
+            }
+    
+            db.splice(foundIndex, 1, updatedTodo)
+            return res.status(200).send({
+                success: true,
+                message: 'succesfully updated todo',
+                todo: updatedTodo
+            })
+        }).catch(validationError => {
+            const errorMessage = validationError.details.map(d => d.message)
+            res.status(400).send(errorMessage)
         })
+
+        
     }
 
 

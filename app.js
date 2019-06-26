@@ -10,9 +10,13 @@ app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({
     extended: false
 }))
+
+//use personal router
 app.use(router)
 
 const PORT = 5000
 app.listen(PORT, () => {
     console.log(`server running on port ${PORT}`)
 })
+
+
